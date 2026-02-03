@@ -5,7 +5,8 @@ This is the repository for the LinkedIn Learning course `Terminal-First AI Pair 
 
 ## Course Description
 
-_See the readme file in the main branch for updated instructions and information._
+This course gives developers an applied path to using GitHub Copilot CLI in real, day‑to‑day terminal workflows. Instead of focusing on features in isolation, you’ll work inside a single project repository and use Copilot CLI to plan changes, generate code, review output, and run commands safely from the command line. Along the way, you’ll learn how to steer Copilot with slash commands, implement reusable skills, extend workflows with MCP servers, and switch between interactive and non‑interactive modes. You’ll also practice resuming work across sessions and controlling context precisely using file references and shell commands. By the end of the course, you’ll have built a repeatable Copilot CLI workflow you can apply immediately in your own projects.
+
 ## Instructions
 This repository has branches for each of the videos in the course. You can use the branch pop up menu in github to switch to a specific branch and take a look at the course at that stage, or you can add `/tree/BRANCH_NAME` to the URL to go to the branch you want to access.
 
@@ -25,18 +26,24 @@ To resolve this issue:
 	Commit changes using this command: git commit -m "some message"
 
 ## Installing
+
 1. To use these exercise files, you must have the following installed:
-	- [list of requirements for course]
-2. Clone this repository into your local machine using the terminal (Mac), CMD (Windows), or a GUI tool like SourceTree.
-3. [Course-specific instructions]
+	- [Node.js](https://nodejs.org/) 18 or higher
+	- [Git](https://git-scm.com/)
+	- [GitHub Copilot CLI](https://github.com/features/copilot/cli/)
+2. Clone this repository into your local machine.
+3. Install dependencies and start the server:
+   ```bash
+   npm install
+   npm start
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Instructor
 
-Instructor name
+Kayla Cinnamon
 
-Instructor description
-
-                            
+Kayla Cinnamon is a Senior AI Developer Tools Advocate at Microsoft. Formerly the Product Manager for Windows Terminal, Microsoft PowerToys, and Cascadia Code, she works at the intersection of AI, developer experience, and tooling, with a background in software engineering and human-computer interaction.
 
 Check out my other courses on [LinkedIn Learning](https://www.linkedin.com/learning/instructors/).
 
