@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Data files (keep folder structure)
+data/*.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp/Debug
+.tmp
+npm-debug.log
+*.log
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standup Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <h1>📋 Standup Generator</h1>
+    <p>Generate daily standup notes from your git history.</p>
+    
+    <form id="standup-form">
+      <input type="text" id="repo-path" placeholder="Enter local repo path (e.g., C:\Projects\my-repo)" required>
+      <button type="submit" id="generate-btn">Generate</button>
+    </form>
+
+    <div id="error" class="error hidden"></div>
+
+    <div id="results" class="results hidden">
+      <section class="standup-section">
+        <h2>📅 Yesterday</h2>
+        <ul id="yesterday-list"></ul>
+      </section>
+      <section class="standup-section">
+        <h2>🎯 Today</h2>
+        <ul id="today-list"></ul>
+      </section>
+      <section class="standup-section">
+        <h2>🚧 Blockers</h2>
+        <p class="placeholder">No blockers reported</p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('standup-form');
+    const repoInput = document.getElementById('repo-path');
+    const generateBtn = document.getElementById('generate-btn');
+    const errorDiv = document.getElementById('error');
+    const resultsDiv = document.getElementById('results');
+    const yesterdayList = document.getElementById('yesterday-list');
+    const todayList = document.getElementById('today-list');
+
+    function renderCommits(list, commits) {
+      list.innerHTML = '';
+      if (commits.length === 0) {
+        list.innerHTML = '<li class="empty">No commits</li>';
+        return;
+      }
+      commits.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = `${c.message} — ${c.author}`;
+        list.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDiv.classList.add('hidden');
+      resultsDiv.classList.add('hidden');
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Loading...';
+
+      try {
+        const res = await fetch('/api/standup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ repoPath: repoInput.value })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to generate standup');
+        }
+
+        renderCommits(yesterdayList, data.yesterday);
+        renderCommits(todayList, data.today);
+        resultsDiv.classList.remove('hidden');
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.classList.remove('hidden');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate';
+      }
+    });
+  </script>
+</body>
+</html>
