@@ -35,7 +35,11 @@
       </section>
       <section class="standup-section">
         <h2>🚧 Blockers</h2>
-        <p class="placeholder">No blockers reported</p>
+        <div class="form-row">
+          <input type="text" id="blocker-input" placeholder="Add a blocker...">
+          <button type="button" id="add-blocker-btn">Add</button>
+        </div>
+        <ul id="blockers-list"></ul>
       </section>
     </div>
   </main>
@@ -51,29 +55,48 @@
     const resultsDiv = document.getElementById('results');
     const yesterdayList = document.getElementById('yesterday-list');
     const todayList = document.getElementById('today-list');
+    const blockersList = document.getElementById('blockers-list');
+    const blockerInput = document.getElementById('blocker-input');
+    const addBlockerBtn = document.getElementById('add-blocker-btn');
 
     function loadSettings() {
-      const defaults = { rememberRepoPath: false, repoPath: '' };
+      const defaults = { rememberRepoPath: false, repoPath: '', blockers: [] };
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaults;
 
       try {
-        const parsed = JSON.parse(raw);
+        const parsed = JSON.parse(raw) || {};
         const rememberRepoPath = typeof parsed.rememberRepoPath === 'boolean' ? parsed.rememberRepoPath : defaults.rememberRepoPath;
         const repoPath = typeof parsed.repoPath === 'string' ? parsed.repoPath.trim() : defaults.repoPath;
-        return { rememberRepoPath, repoPath };
+        const blockers = Array.isArray(parsed.blockers)
+          ? parsed.blockers
+              .filter(b => typeof b === 'string')
+              .map(b => b.trim())
+              .filter(Boolean)
+          : defaults.blockers;
+        return { rememberRepoPath, repoPath, blockers };
       } catch {
         return defaults;
       }
     }
 
     function saveSettings(next) {
-      const rememberRepoPath = !!next.rememberRepoPath;
-      const repoPath = typeof next.repoPath === 'string' ? next.repoPath.trim() : '';
+      const current = loadSettings();
+      const merged = { ...current, ...next };
+
+      const rememberRepoPath = !!merged.rememberRepoPath;
+      const repoPath = typeof merged.repoPath === 'string' ? merged.repoPath.trim() : '';
+      const blockers = Array.isArray(merged.blockers)
+        ? merged.blockers
+            .filter(b => typeof b === 'string')
+            .map(b => b.trim())
+            .filter(Boolean)
+        : [];
 
       const toStore = {
         rememberRepoPath,
-        repoPath: rememberRepoPath ? repoPath : ''
+        repoPath: rememberRepoPath ? repoPath : '',
+        blockers
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
@@ -85,6 +108,7 @@
       if (settings.rememberRepoPath && settings.repoPath) {
         repoInput.value = settings.repoPath;
       }
+      renderBlockers(settings.blockers);
     }
 
     function renderCommits(list, commits) {
@@ -99,6 +123,49 @@
         list.appendChild(li);
       });
     }
+
+    function renderBlockers(blockers) {
+      blockersList.innerHTML = '';
+      if (!blockers || blockers.length === 0) {
+        blockersList.innerHTML = '<li class="empty">No blockers reported</li>';
+        return;
+      }
+
+      blockers.forEach((b, idx) => {
+        const li = document.createElement('li');
+        li.appendChild(document.createTextNode(`${b} `));
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+          const nextBlockers = loadSettings().blockers.filter((_, i) => i !== idx);
+          saveSettings({ blockers: nextBlockers });
+          renderBlockers(nextBlockers);
+        });
+
+        li.appendChild(removeBtn);
+        blockersList.appendChild(li);
+      });
+    }
+
+    function addBlocker() {
+      const text = blockerInput.value.trim();
+      if (!text) return;
+
+      const nextBlockers = [...loadSettings().blockers, text];
+      saveSettings({ blockers: nextBlockers });
+      renderBlockers(nextBlockers);
+      blockerInput.value = '';
+      blockerInput.focus();
+    }
+
+    addBlockerBtn.addEventListener('click', addBlocker);
+    blockerInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      addBlocker();
+    });
 
     rememberRepoCheckbox.addEventListener('change', () => {
       saveSettings({
@@ -139,6 +206,7 @@
 
         renderCommits(yesterdayList, data.yesterday);
         renderCommits(todayList, data.today);
+        renderBlockers(loadSettings().blockers);
         resultsDiv.classList.remove('hidden');
       } catch (err) {
         errorDiv.textContent = err.message;

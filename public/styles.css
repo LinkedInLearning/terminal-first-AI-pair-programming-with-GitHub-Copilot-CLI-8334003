@@ -134,3 +134,51 @@ p {
   color: #999;
   font-style: italic;
 }
+
+/* Match blocker controls to main input/button styling */
+#blocker-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+#blocker-input:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+#add-blocker-btn {
+  padding: 0.75rem 1.5rem;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#add-blocker-btn:hover {
+  background: #0052a3;
+}
+
+#blockers-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#blockers-list button {
+  padding: 0.35rem 0.75rem;
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#blockers-list button:hover {
+  background: #eee;
+}
