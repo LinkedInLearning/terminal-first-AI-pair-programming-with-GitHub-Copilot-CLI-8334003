@@ -28,7 +28,7 @@ To resolve this issue:
 ## Installing
 
 1. To use these exercise files, you must have the following installed:
-	- [Node.js](https://nodejs.org/) 18 or higher
+	- [Node.js](https://nodejs.org/) 22 or higher
 	- [Git](https://git-scm.com/)
 	- [GitHub Copilot CLI](https://github.com/features/copilot/cli/)
 2. Clone this repository into your local machine.
