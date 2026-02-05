@@ -12,8 +12,14 @@
     <p>Generate daily standup notes from your git history.</p>
     
     <form id="standup-form">
-      <input type="text" id="repo-path" placeholder="Enter local repo path (e.g., C:\Projects\my-repo)" required>
-      <button type="submit" id="generate-btn">Generate</button>
+      <div class="form-row">
+        <input type="text" id="repo-path" placeholder="Enter local repo path (e.g., C:\Projects\my-repo)" required>
+        <button type="submit" id="generate-btn">Generate</button>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="remember-repo-path">
+        Remember this repo path
+      </label>
     </form>
 
     <div id="error" class="error hidden"></div>
@@ -35,13 +41,51 @@
   </main>
 
   <script>
+    const STORAGE_KEY = 'standupGenerator.settings.v1';
+
     const form = document.getElementById('standup-form');
     const repoInput = document.getElementById('repo-path');
+    const rememberRepoCheckbox = document.getElementById('remember-repo-path');
     const generateBtn = document.getElementById('generate-btn');
     const errorDiv = document.getElementById('error');
     const resultsDiv = document.getElementById('results');
     const yesterdayList = document.getElementById('yesterday-list');
     const todayList = document.getElementById('today-list');
+
+    function loadSettings() {
+      const defaults = { rememberRepoPath: false, repoPath: '' };
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaults;
+
+      try {
+        const parsed = JSON.parse(raw);
+        const rememberRepoPath = typeof parsed.rememberRepoPath === 'boolean' ? parsed.rememberRepoPath : defaults.rememberRepoPath;
+        const repoPath = typeof parsed.repoPath === 'string' ? parsed.repoPath.trim() : defaults.repoPath;
+        return { rememberRepoPath, repoPath };
+      } catch {
+        return defaults;
+      }
+    }
+
+    function saveSettings(next) {
+      const rememberRepoPath = !!next.rememberRepoPath;
+      const repoPath = typeof next.repoPath === 'string' ? next.repoPath.trim() : '';
+
+      const toStore = {
+        rememberRepoPath,
+        repoPath: rememberRepoPath ? repoPath : ''
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+    }
+
+    function applySettings() {
+      const settings = loadSettings();
+      rememberRepoCheckbox.checked = settings.rememberRepoPath;
+      if (settings.rememberRepoPath && settings.repoPath) {
+        repoInput.value = settings.repoPath;
+      }
+    }
 
     function renderCommits(list, commits) {
       list.innerHTML = '';
@@ -56,12 +100,30 @@
       });
     }
 
+    rememberRepoCheckbox.addEventListener('change', () => {
+      saveSettings({
+        rememberRepoPath: rememberRepoCheckbox.checked,
+        repoPath: repoInput.value
+      });
+    });
+
+    repoInput.addEventListener('input', () => {
+      if (!rememberRepoCheckbox.checked) return;
+      saveSettings({ rememberRepoPath: true, repoPath: repoInput.value });
+    });
+
+    applySettings();
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorDiv.classList.add('hidden');
       resultsDiv.classList.add('hidden');
       generateBtn.disabled = true;
       generateBtn.textContent = 'Loading...';
+
+      if (rememberRepoCheckbox.checked) {
+        saveSettings({ rememberRepoPath: true, repoPath: repoInput.value });
+      }
 
       try {
         const res = await fetch('/api/standup', {
